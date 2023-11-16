@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+    <name>egalertstock</name>
+    <displayName><![CDATA[Eg Alert Stock]]></displayName>
+    <version><![CDATA[1.0.0]]></version>
+    <description><![CDATA[Egio Alert Stock Module Notify costumers when product is in stock]]></description>
+    <author><![CDATA[Stoph]]></author>
+    <tab><![CDATA[front_office_features]]></tab>
+	<confirmUninstall><![CDATA[Êtes-vous sûr de vouloir désinstaller ce module ?]]></confirmUninstall>
+    <is_configurable>1</is_configurable>
+    <need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>
