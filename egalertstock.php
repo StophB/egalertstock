@@ -257,6 +257,9 @@ class EgAlertStock extends Module
             foreach ($subscribers as $subscriber) {
                 // Send email to each subscriber
                 $this->sendEmailToSubscriber($subscriber);
+
+                // Delete the alert for this subscriber
+                $this->deleteAlert($subscriber['id_eg_alertstock']);
             }
         }
     }
@@ -264,15 +267,25 @@ class EgAlertStock extends Module
 
     protected function sendEmailToSubscriber($subscriber)
     {
-        $productId = (int)$subscriber['id_product'];
         $email = $subscriber['email'];
-        $alertId = (int)$subscriber['id_eg_alertstock'];
-        $subject = 'Product Back in Stock';
-        $message = 'The product is back in stock.';
-        if (mail($email, $subject, $message)) {
-            // Delete the alert for this subscriber
-            $this->deleteAlert($alertId);
-        }
+        $name = $subscriber['name'];
+
+        Mail::send(
+            $this->context->language->id,
+            'alertstockmail',
+            $this->l('Product is Back in stock'),
+            array(
+                'customer_name' => $name,
+            ),
+            $email,
+            $name,
+            Configuration::get('PS_SHOP_EMAIL'),
+            Configuration::get('PS_SHOP_NAME'),
+            null, 
+            null, 
+            dirname(__FILE__).'/mails/'
+        );
+        
     }
 
 

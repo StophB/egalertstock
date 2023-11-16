@@ -4,7 +4,7 @@ $(document).ready(function () {
 
     var form = new FormData(this);
     $.ajax({
-      url: moduleUrl, // Use the moduleUrl variable here
+      url: moduleUrl,
       type: "POST",
       dataType: "json",
       data: {
