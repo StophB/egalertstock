@@ -247,65 +247,42 @@ class EgAlertStock extends Module
 
     public function hookActionUpdateQuantity($params)
     {
-        file_put_contents(_PS_ROOT_DIR_ . '/test.txt', 'blabla');
-        $productId = (int)$params['id_product'];
         $newQuantity = (int)$params['quantity'];
 
-        // Check if the quantity changed and the product is in stock
-        if ($newQuantity > 0 && $newQuantity != $params['quantity_old']) {
+        if ($newQuantity > 0) {
 
             // Check if there are users subscribed to that product
-            $subscribers = $this->getSubscribers($productId);
+            $subscribers = $this->getSubscribers();
 
             foreach ($subscribers as $subscriber) {
                 // Send email to each subscriber
                 $this->sendEmailToSubscriber($subscriber);
-
-                // Delete the alert for this subscriber
-                $this->deleteAlert($subscriber['id_eg_alertstock']);
             }
         }
     }
 
-    protected function getSubscribers($productId)
-    {
-        $sql = new DbQuery();
-        $sql->select('*');
-        $sql->from('eg_alertstock');
-        $sql->where('id_product = ' . (int)$productId . ' AND status = 1');
-
-        return DB::getInstance()->executeS($sql);
-    }
 
     protected function sendEmailToSubscriber($subscriber)
     {
         $productId = (int)$subscriber['id_product'];
-        $productName = $this->getProductName($productId);
-        Mail::send(
-            (int)Context::getContext()->language->id,
-            'product_back_in_stock',
-            $this->l('Product is in stock'),
-            array(
-                '{customer_name}' => $subscriber['name'],
-                '{product_name}' => $productName,
-            ),
-            $subscriber['email'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            _PS_MAIL_DIR_,
-            false,
-            null,
-            null
-        );
+        $email = $subscriber['email'];
+        $alertId = (int)$subscriber['id_eg_alertstock'];
+        $subject = 'Product Back in Stock';
+        $message = 'The product is back in stock.';
+        if (mail($email, $subject, $message)) {
+            // Delete the alert for this subscriber
+            $this->deleteAlert($alertId);
+        }
     }
 
-    protected function getProductName($productId)
+
+    protected function getSubscribers()
     {
-        $product = new Product($productId, false, (int)Context::getContext()->language->id);
-        return $product->name;
+        $sql = new DbQuery();
+        $sql->select('*');
+        $sql->from('eg_alertstock');
+
+        return DB::getInstance()->executeS($sql);
     }
 
     protected function deleteAlert($alertId)
@@ -317,8 +294,11 @@ class EgAlertStock extends Module
 
     public function hookHeader()
     {
-        $moduleUrl = $this->context->link->getModuleLink($this->name, 'alertsubmit', array(), true);
-        $this->context->smarty->assign('moduleUrl', $moduleUrl);
+        Media::addJsDef(
+            [
+                'moduleUrl' => $this->context->link->getModuleLink($this->name, 'alertsubmit')
+            ]
+        );
         $this->context->controller->addJS($this->_path . '/views/js/front.js');
     }
 }
